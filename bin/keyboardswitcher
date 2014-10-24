@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from kbs.keyboardSwitcher import KeyboardSwitcher
+import sys
+
+prog = KeyboardSwitcher()
+prog.getArguments(sys.argv[1:])
