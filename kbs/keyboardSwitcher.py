@@ -59,19 +59,31 @@ class KeyboardSwitcher:
 
         #you could read here parameters of the config file instead of passing them on cmd line
         #self.__baseURI = self.__ksConfig.get("Config", "baseURI")
+        self.__layout = "mac_internal"
         
     def main(self):
         """The main function"""
         self.__log.debug("The chosen layout is: " + self.__layout)
 
+    def print_layouts(self):
+        """Shows a list of available layouts"""
+        print("Following layouts are available:")
+        sections = self.__ksConfig.sections()
+        for section in sections:
+            if section != "General":
+                print("\t* "+section)
 
     def getArguments(self, argv):
         parser = argparse.ArgumentParser()
-        parser.add_argument("-l", "--layout", help="layout to choose from",
-                            required=True)
+        parser.add_argument("layout", help="layout to apply", nargs='?', default="logitech")
+        parser.add_argument("-l", "--list-layouts", help="List the available layouts",
+                            required=False, action="store_true")
         args = parser.parse_args(argv)
-        self.__layout = args.layout
-        self.main()
+        if args.list_layouts:
+            self.print_layouts()
+        else:
+            self.__layout = args.layout
+            self.main()
 
 if __name__ == '__main__':
     prog = KeyboardSwitcher()
