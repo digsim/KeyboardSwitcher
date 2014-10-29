@@ -33,6 +33,7 @@
 import sys
 import logging
 import logging.config
+import subprocess
 if float(sys.version[:3])<3.0:
     import ConfigParser
 else: 
@@ -57,13 +58,35 @@ class KeyboardSwitcher:
         self.__ksConfig = ConfigParser.SafeConfigParser()
         self.__ksConfig.read([join(CONFIG_DIR, 'keyboardswitcher.cfg'), expanduser('~/.keyboardswitcher.cfg'), 'keyboardswitcher.cfg'])
 
+
         #you could read here parameters of the config file instead of passing them on cmd line
         #self.__baseURI = self.__ksConfig.get("Config", "baseURI")
+        self.__xmodmap = self.__ksConfig.get("General", "xmodmap")
         self.__layout = "mac_internal"
         
     def main(self):
         """The main function"""
         self.__log.debug("The chosen layout is: " + self.__layout)
+        self.__log.info("Clenaup old modifier keys")
+        subprocess.call(self.__xmodmap + ' -e "clear control"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "clear mod4"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "clear mod5"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "clear mod1"', shell=True)
+        self.__log.info("Apply new layout")
+        for option in self.__ksConfig.options(self.__layout):
+            value = self.__ksConfig.get(self.__layout, option)
+            key = option.replace('kc_', 'keycode ')
+            argument = '-e "' + key + ' = ' + value + '"'
+            self.__log.debug(argument)
+            subprocess.call(self.__xmodmap + ' ' + argument, shell=True)
+        self.__log.info("Define new modifier keys")
+        subprocess.call(self.__xmodmap + ' -e "add mod4 = Super_L"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "add mod5 = ISO_Level3_Shift"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "add mod1 = Alt_L Meta_L"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "add mod1 = Alt_R Meta_R"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "add control = Control_L"', shell=True)
+        subprocess.call(self.__xmodmap + ' -e "add control = Control_R"', shell=True)
+
 
     def print_layouts(self):
         """Shows a list of available layouts"""
